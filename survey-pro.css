@@ -1,0 +1,10 @@
+/* Survey Pro v256 */
+.sp-panel .sp-head{background:linear-gradient(135deg,#eff6ff,#ecfeff);border-color:#bfdbfe}
+.sp-panel textarea{width:100%;min-height:130px;resize:vertical;border:1px solid var(--line,#cbd5e1);border-radius:10px;padding:10px;font:13px/1.5 ui-monospace,Consolas,monospace;direction:ltr;text-align:left;background:var(--surface,#fff);color:var(--text,#172033)}
+.sp-panel input[type=file]{display:block;width:100%;margin:7px 0 13px;padding:9px;border:1px dashed #94a3b8;border-radius:10px;background:#f8fafc}
+.sp-panel label{font-weight:700;color:var(--text-2,#475569)}
+.sp-result-actions{margin-top:10px;flex-wrap:wrap}
+.sp-result-actions .cv-btn{min-width:auto;padding:8px 11px}
+.sp-panel .cv-table{font-size:12px}
+.sp-panel .cv-table td,.sp-panel .cv-table th{white-space:nowrap}
+@media(max-width:680px){.sp-panel .cv-span-5,.sp-panel .cv-span-6,.sp-panel .cv-span-7{grid-column:span 12}.sp-panel .cv-table-wrap{overflow-x:auto}.sp-panel textarea{min-height:160px}}

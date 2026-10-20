@@ -1,0 +1,11 @@
+/* Full main-page titles with touch-friendly wrapping and direct reorder feedback. */
+.tabs{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(105px,1fr))!important;gap:5px!important;overflow:visible!important;align-items:stretch!important}
+.tab{min-width:0!important;min-height:46px!important;padding:7px 6px!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.15!important;text-align:center!important;touch-action:pan-y!important}
+.tab .tab-lg{display:inline!important}
+.tab .tab-sm{display:none!important}
+.tab.qwu-direct-sorting{user-select:none!important;-webkit-user-select:none!important}
+.tab.qwu-tab-dragging{position:relative;z-index:20;opacity:.86;transform:scale(1.04);box-shadow:0 8px 24px rgba(49,46,129,.3);outline:3px solid #818cf8;cursor:grabbing}
+#view-gpr .gpr-table th{white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+@media(max-width:700px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}.tab{min-height:48px!important;font-size:11px!important}}
+@media(min-width:360px) and (max-width:700px){.tabs{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(min-width:701px) and (max-width:900px){.tabs{grid-template-columns:repeat(4,minmax(0,1fr))!important}}

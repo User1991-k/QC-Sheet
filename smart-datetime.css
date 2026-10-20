@@ -1,0 +1,5 @@
+/* QC Survey v285 — native calendar/clock inputs only; no auxiliary Today/Now/Clear rows. */
+.qdt-tools{display:none!important}
+.qdt-enhanced{color-scheme:light;font-variant-numeric:tabular-nums}
+.theme-dark .qdt-enhanced{color-scheme:dark}
+@media print{.qdt-tools{display:none!important}}
