@@ -1,5 +1,5 @@
 /* QC Survey App SW v261 clean DC sketch without drawn safe-area boundary. */
-const CACHE = 'qc-survey-v321-mobile-hardening';
+const CACHE = 'qc-survey-v322-universal-flange-3d';
 /* v296: the app shell includes the local Arabic/English OCR engine and models so
    recognition remains available offline; unrelated heavy libraries still cache on first use. */
 const SHELL = [
@@ -45,7 +45,7 @@ const SHELL = [
   './global-quality.css',
   './vendor/three-r128.min.js',
   './vendor/OrbitControls-r128.js',
-  './dc-flange.js?v=321.0',
+  './dc-flange.js?v=322.0',
   './dc-flange-pro.js?v=317.0',
   './dc-sketch-pro.js',
   './dc-flange.css?v=317.0',
@@ -90,7 +90,7 @@ const SHELL = [
   './universal-field-engine-v320.css?v=321.0',
   './page-lifecycle-v320.js?v=321.0',
   './page-lifecycle-v320.css?v=321.0',
-  './mobile-hardening-v321.css?v=321.0',
+  './mobile-hardening-v321.css?v=322.0',
   './pdfjs-local.mjs',
   './pdfjs-worker-local.mjs',
   './vendor/tesseract/tesseract.min.js',

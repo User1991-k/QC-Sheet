@@ -929,7 +929,7 @@
     model.className = "df-fallback-model";
     model.setAttribute("aria-label", T("Flange safe 2D drawing", "رسم الفلنجة الثنائي الآمن"));
     box.insertBefore(model, ann);
-    var controls = {enabled:true,autoRotate:false,target:{toArray:function(){return[0,0,0]}},update:function(){},addEventListener:function(){},getAzimuthalAngle:function(){return 0}}, renderer = {domElement:model,dispose:function(){},render:function(){drawFallbackModel(inst)},setSize:function(){drawFallbackModel(inst)}}, camera = {position:{toArray:function(){return[8,4,8]}},aspect:1,updateProjectionMatrix:function(){}}, inst = {el:el,p:p,scene:null,camera:camera,renderer:renderer,controls:controls,group:null,ann:ann,ctx:ann.getContext("2d"),txt:txt,tctx:txt.getContext("2d"),textMode:false,moveMode:false,textHits:[],dragText:null,drawTool:"orbit",undoStack:[],viewAnimating:false,viewSaveTimer:null,dead:false,fallback2D:true,fallbackCtx:ctx};
+    var controls = {enabled:true,autoRotate:false,target:{toArray:function(){return[0,0,0]}},update:function(){},addEventListener:function(){},getAzimuthalAngle:function(){return 0}}, renderer = {domElement:model,dispose:function(){},render:function(){drawFallbackModel(inst)},setSize:function(){drawFallbackModel(inst)}}, camera = {position:{toArray:function(){return[8,4,8]}},aspect:1,updateProjectionMatrix:function(){}}, inst = {el:el,p:p,scene:null,camera:camera,renderer:renderer,controls:controls,group:null,ann:ann,ctx:ann.getContext("2d"),txt:txt,tctx:txt.getContext("2d"),textMode:false,moveMode:false,textHits:[],dragText:null,drawTool:"orbit",undoStack:[],viewAnimating:false,viewSaveTimer:null,dead:false,fallback2D:true,software3D:true,fallbackCtx:ctx,fallbackYaw:-.68,fallbackPitch:.42,fallbackZoom:1};
     instances[p.id] = inst;
     sizeFallbackModel(inst);
     sizeAnnotation(inst, p.annotation);
@@ -937,11 +937,17 @@
     setupDraw(inst);
     setupTextPlacement(inst);
     var badge = document.createElement("div");
-    badge.className = "df-safe2d-badge";
-    badge.textContent = T("Safe 2D drawing · 3D is unavailable on this browser", "رسم ثنائي آمن · العرض الثلاثي غير متاح في هذا المتصفح");
-    badge.title = reason || "";
+    badge.className = "df-safe2d-badge df-software3d-badge";
+    badge.textContent = T("Software 3D · universal browser mode", "ثلاثي الأبعاد برمجياً · وضع متوافق مع كل المتصفحات");
+    badge.title = reason || T("WebGL was replaced by the universal software 3D renderer", "تم استبدال WebGL بمحرك ثلاثي برمجي متوافق");
     box.appendChild(badge);
-    el.querySelectorAll("[data-view],[data-view-step],[data-action=auto-rotate],[data-action=smart-orbit]").forEach(function(b){b.disabled=true;b.title=T("Available in 3D mode only", "متاح في العرض الثلاثي فقط")});
+    /* Pointer rotation and wheel zoom keep software 3D interactive on old browsers. */
+    var drag=null;
+    model.addEventListener("pointerdown",function(e){if(inst.drawTool!=="orbit")return;drag={x:e.clientX,y:e.clientY,yaw:inst.fallbackYaw,pitch:inst.fallbackPitch};try{model.setPointerCapture(e.pointerId)}catch(z){}});
+    model.addEventListener("pointermove",function(e){if(!drag)return;inst.fallbackYaw=drag.yaw+(e.clientX-drag.x)*.012;inst.fallbackPitch=Math.max(-1.25,Math.min(1.25,drag.pitch+(e.clientY-drag.y)*.01));drawFallbackModel(inst)});
+    function endDrag(){drag=null} model.addEventListener("pointerup",endDrag);model.addEventListener("pointercancel",endDrag);
+    model.addEventListener("wheel",function(e){e.preventDefault();inst.fallbackZoom=Math.max(.62,Math.min(1.7,inst.fallbackZoom*(e.deltaY>0?.9:1.1)));drawFallbackModel(inst)},{passive:false});
+    el.querySelectorAll("[data-action=auto-rotate],[data-action=smart-orbit]").forEach(function(b){b.disabled=true;b.title=T("Manual rotation remains available in universal 3D mode", "يبقى التدوير اليدوي متاحاً في الوضع الثلاثي المتوافق")});
     var resize=function(){if(inst.dead||!box.clientWidth)return;sizeFallbackModel(inst);sizeAnnotation(inst,p.annotation);sizeTextLayer(inst)};
     if(window.ResizeObserver){var ro=new ResizeObserver(resize);ro.observe(box);inst.ro=ro}else{window.addEventListener("resize",resize);inst.ro={disconnect:function(){window.removeEventListener("resize",resize)}};}
   }
@@ -950,12 +956,22 @@
     c.width=Math.round(w*d);c.height=Math.round(h*d);c.style.width=w+"px";c.style.height=h+"px";inst.fallbackCtx.setTransform(d,0,0,d,0,0);drawFallbackModel(inst,w,h);
   }
   function drawFallbackModel(inst, width, height) {
-    if(!inst||!inst.fallbackCtx)return;var c=inst.renderer.domElement,ctx=inst.fallbackCtx,d=Math.min(devicePixelRatio||1,2),w=width||c.width/d,h=height||c.height/d,p=inst.p,colors=p.colors||{},pipe=colors.pipe||"#64748b",left=colors.left||"#2563eb",right=colors.right||"#0f766e",bolt=colors.bolt||"#334155",cx=w*.5,cy=h*.52,R=Math.min(h*.31,w*.16),inner=R*.47,count=Math.max(4,Math.min(32,Math.round(num(p.boltNo,8))));
-    ctx.clearRect(0,0,w,h);var g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,"#f8fafc");g.addColorStop(1,"#e7eef5");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.strokeStyle="#d8e2ec";ctx.lineWidth=1;for(var gx=20;gx<w;gx+=40){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke()}for(var gy=20;gy<h;gy+=40){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke()}
-    function ring(x,col){ctx.save();ctx.fillStyle=col;ctx.strokeStyle="#0f172a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,cy,R,0,Math.PI*2);ctx.arc(x,cy,inner,0,Math.PI*2,true);ctx.fill("evenodd");ctx.stroke();for(var i=0;i<count;i++){var a=i*Math.PI*2/count,bx=x+Math.cos(a)*R*.72,by=cy+Math.sin(a)*R*.72;ctx.fillStyle="#f8fafc";ctx.strokeStyle=bolt;ctx.lineWidth=2;ctx.beginPath();ctx.arc(bx,by,Math.max(3,R*.065),0,Math.PI*2);ctx.fill();ctx.stroke()}ctx.restore()}
-    ctx.fillStyle=pipe;ctx.strokeStyle="#334155";ctx.lineWidth=3;ctx.fillRect(cx-R*1.9,cy-inner*.65,R*3.8,inner*1.3);ctx.strokeRect(cx-R*1.9,cy-inner*.65,R*3.8,inner*1.3);
-    if(p.type==="pipe"){ctx.fillStyle=pipe;ctx.fillRect(cx-R*2.4,cy-R*.52,R*4.8,R*1.04);ctx.strokeRect(cx-R*2.4,cy-R*.52,R*4.8,R*1.04);ctx.beginPath();ctx.ellipse(cx-R*2.4,cy,R*.28,R*.52,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.beginPath();ctx.ellipse(cx+R*2.4,cy,R*.28,R*.52,0,0,Math.PI*2);ctx.fill();ctx.stroke()}else if(p.type==="half-flange"){ring(cx,left)}else{ring(cx-R*.68,left);ring(cx+R*.68,right)}
-    ctx.fillStyle="#173d77";ctx.font="800 14px Arial, sans-serif";ctx.textAlign="center";ctx.fillText(p.type==="pipe"?T("PIPE", "أنبوب"):p.type==="half-flange"?T("HALF FLANGE", "نصف فلنجة"):T("DC FLANGE", "فلنجة DC"),cx,28);ctx.fillStyle="#52657a";ctx.font="700 11px Arial, sans-serif";ctx.fillText(T("Safe technical view · dimensions remain editable", "منظر فني آمن · الأبعاد قابلة للتعديل"),cx,h-16);
+    /* Software 3D renderer: projected geometry for browsers/devices without WebGL. */
+    if(!inst||!inst.fallbackCtx)return;
+    var c=inst.renderer.domElement,ctx=inst.fallbackCtx,d=Math.min(devicePixelRatio||1,2),w=width||c.width/d,h=height||c.height/d,p=inst.p,colors=p.colors||{},pipe=colors.pipe||"#64748b",left=colors.left||"#2563eb",right=colors.right||"#0f766e",raise=colors.raise||"#f59e0b",bolt=colors.bolt||"#334155",cx=w*.5,cy=h*.52;
+    var yaw=inst.fallbackYaw==null?-.68:inst.fallbackYaw,pitch=inst.fallbackPitch==null?.42:inst.fallbackPitch,zoom=inst.fallbackZoom||1,scale=Math.min(w/8.4,h/5.8)*zoom,cosY=Math.cos(yaw),sinY=Math.sin(yaw),cosP=Math.cos(pitch),sinP=Math.sin(pitch);
+    function shade(hex,amt){var m=String(hex||'#64748b').match(/[0-9a-f]{6}/i);if(!m)return hex;var n=parseInt(m[0],16),r=Math.max(0,Math.min(255,(n>>16)+amt)),g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),b=Math.max(0,Math.min(255,(n&255)+amt));return'#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+    function pr(x,y,z){var x1=x*cosY+z*sinY,z1=-x*sinY+z*cosY,y1=y*cosP-z1*sinP,z2=y*sinP+z1*cosP,k=1/(1+z2*.025);return{x:cx+x1*scale*k,y:cy-y1*scale*k,z:z2}}
+    function loop(x,r,n){var a=[],i;for(i=0;i<(n||48);i++){var q=i*Math.PI*2/(n||48);a.push(pr(x,Math.sin(q)*r,-Math.cos(q)*r))}return a}
+    function path(a){ctx.beginPath();a.forEach(function(q,i){if(i)ctx.lineTo(q.x,q.y);else ctx.moveTo(q.x,q.y)});ctx.closePath()}
+    function tube(x1,x2,r,col){var a=loop(x1,r,48),b=loop(x2,r,48);ctx.fillStyle=shade(col,-24);ctx.strokeStyle=shade(col,-52);ctx.lineWidth=1.4;for(var i=0;i<48;i++){var j=(i+1)%48;path([a[i],a[j],b[j],b[i]]);ctx.fill()}path(a);ctx.stroke();path(b);ctx.fillStyle=shade(col,10);ctx.fill();ctx.stroke()}
+    function ring(x,ro,ri,depth,col,count,hole){tube(x-depth/2,x+depth/2,ro,col);var outer=loop(x+depth/2,ro,64),inner=loop(x+depth/2,ri,64);ctx.fillStyle=shade(col,18);ctx.strokeStyle=shade(col,-58);ctx.lineWidth=1.6;ctx.beginPath();outer.forEach(function(q,i){i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.closePath();inner.slice().reverse().forEach(function(q,i){if(!i)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)});ctx.closePath();ctx.fill('evenodd');ctx.stroke();if(count){for(var k=0;k<count;k++){var an=k*Math.PI*2/count,bc=pr(x+depth*.53,Math.sin(an)*1.6,-Math.cos(an)*1.6),br=Math.max(2.1,(hole||.09)*scale*.62);ctx.beginPath();ctx.arc(bc.x,bc.y,br,0,Math.PI*2);ctx.fillStyle='#f8fafc';ctx.fill();ctx.strokeStyle=shade(bolt,-35);ctx.stroke()}}}
+    function boltSet(count,r,x1,x2,rad){for(var k=0;k<count;k++){var an=k*Math.PI*2/count,y=Math.sin(an)*r,z=-Math.cos(an)*r,a=pr(x1,y,z),b=pr(x2,y,z);ctx.strokeStyle=bolt;ctx.lineWidth=Math.max(2,rad*scale);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();[a,b].forEach(function(q){ctx.beginPath();ctx.arc(q.x,q.y,Math.max(2.6,rad*scale*1.45),0,Math.PI*2);ctx.fillStyle=shade(bolt,16);ctx.fill();ctx.strokeStyle=shade(bolt,-35);ctx.lineWidth=1;ctx.stroke()})}}
+    ctx.clearRect(0,0,w,h);var bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#f8fafc');bg.addColorStop(1,'#e5edf5');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);ctx.strokeStyle='#d8e2ec';ctx.lineWidth=1;for(var gx=20;gx<w;gx+=40){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke()}for(var gy=20;gy<h;gy+=40){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke()}
+    var inner=Math.max(.55,1.4-num(p.wall,8.5)*.03),count=Math.max(0,Math.min(48,Math.round(num(p.boltNo,8)))),hole=Math.max(.05,Math.min(.25,num(p.boltDia,15.61)/200));
+    if(p.type==='pipe'){tube(-2.3,2.3,1.4,pipe);var a=loop(2.3,inner,48);path(a);ctx.fillStyle='#dbe5ed';ctx.fill();ctx.strokeStyle=shade(pipe,-50);ctx.stroke()}
+    else {var fl=Math.max(.18,num(p.f1,23.45)*.015),rf=Math.max(.05,num(p.raiseFace,3.2)*.01),gap=p.type==='half-flange'?0:Math.max(.1,num(p.gap,6.6)*.04),fr=Math.max(.18,num(p.f2,23.35)*.015),lx=-gap/2-rf-fl/2,rx=gap/2+fr/2; tube(lx-fl/2-1.8,lx-fl/2,1.3,pipe);ring(lx,2,inner,fl,left,count,hole);ring(lx+fl/2+rf/2,1.52,inner,rf,raise,0,0);if(p.type!=='half-flange'){ring(rx-fr/2-rf/2,1.52,inner,rf,raise,0,0);ring(rx,2,inner,fr,right,count,hole);tube(rx+fr/2,rx+fr/2+1.8,1.3,pipe)}var bx1=lx-fl/2-.12,bx2=p.type==='half-flange'?lx+fl/2+rf+.12:rx+fr/2+.12;boltSet(count,1.6,bx1,bx2,Math.max(.045,num(p.boltDia,15.61)/250))}
+    ctx.fillStyle='#173d77';ctx.font='800 13px Arial, sans-serif';ctx.textAlign='center';ctx.fillText(p.type==='pipe'?T('PIPE · SOFTWARE 3D','أنبوب · ثلاثي برمجي'):p.type==='half-flange'?T('HALF FLANGE · SOFTWARE 3D','نصف فلنجة · ثلاثي برمجي'):T('DC FLANGE · SOFTWARE 3D','فلنجة DC · ثلاثي برمجي'),cx,25);ctx.fillStyle='#52657a';ctx.font='700 10px Arial, sans-serif';ctx.fillText(T('Drag to rotate · wheel/pinch to zoom','اسحب للتدوير · استخدم التكبير والتصغير'),cx,h-13);
   }
   function num(v, d) {
     var x = parseFloat(v);
@@ -1005,7 +1021,12 @@
     requestAnimationFrame(step);
   }
   function fitSmartView(inst, preset) {
-    if (!inst || !inst.group) return;
+    if (!inst) return;
+    if (inst.software3D) {
+      var views={iso:[-.68,.42,1],front:[Math.PI/2,0,1.08],side:[0,0,1],top:[-.55,1.18,.92]},v=views[preset||"iso"]||views.iso;
+      inst.fallbackYaw=v[0];inst.fallbackPitch=v[1];inst.fallbackZoom=v[2];drawFallbackModel(inst);return;
+    }
+    if (!inst.group) return;
     var box = new THREE.Box3().setFromObject(inst.group),
       sphere = box.getBoundingSphere(new THREE.Sphere()),
       center = sphere.center,
@@ -1049,6 +1070,12 @@
   }
   function stepSmartView(inst, step) {
     if (!inst) return;
+    if (inst.software3D) {
+      if(step==="left")inst.fallbackYaw-=Math.PI/12;if(step==="right")inst.fallbackYaw+=Math.PI/12;
+      if(step==="up")inst.fallbackPitch=Math.max(-1.25,inst.fallbackPitch-.18);if(step==="down")inst.fallbackPitch=Math.min(1.25,inst.fallbackPitch+.18);
+      if(step==="in")inst.fallbackZoom=Math.min(1.7,inst.fallbackZoom*1.14);if(step==="out")inst.fallbackZoom=Math.max(.62,inst.fallbackZoom*.88);
+      drawFallbackModel(inst);return;
+    }
     var target = inst.controls.target.clone(),
       offset = inst.camera.position.clone().sub(target),
       spherical = new THREE.Spherical().setFromVector3(offset),
