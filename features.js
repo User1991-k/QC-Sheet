@@ -16,6 +16,7 @@ window.__qcFeaturesFileLoaded = true;
   var HISTORY_KEY = "qc_survey_history_v1";
   var saveTimer = null;
   var lastSaveAt = 0;
+  var draftDirty = false;
   var dualBuffers = { ts: null, enez: null, llh: null };
   var photoStore = { ts: [], enez: null, llh: null, custom: [] };
   var pendingPhotoDecision = null;
@@ -228,6 +229,7 @@ window.__qcFeaturesFileLoaded = true;
          before collectDraft is expanded for them. Mark it clean after success. */
       checkpointAllFields(false);
       lastSaveAt = Date.now();
+      draftDirty = false;
       setSavePill("", "Saved " + new Date(lastSaveAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}));
       return true;
     } catch (e) {
@@ -237,9 +239,12 @@ window.__qcFeaturesFileLoaded = true;
     }
   }
   function scheduleSave() {
+    draftDirty = true;
     if (saveTimer) clearTimeout(saveTimer);
     setSavePill("saving", "Editing…");
-    saveTimer = setTimeout(saveDraftNow, 220);
+    /* Keystrokes are protected by the compact emergency journal below. The
+       heavier complete draft waits for a quiet moment to keep typing smooth. */
+    saveTimer = setTimeout(saveDraftNow, 950);
   }
 
   /* v222: synchronous, compact keystroke journal. This protects the final
@@ -3107,11 +3112,12 @@ window.__qcFeaturesFileLoaded = true;
     else stack.appendChild(card);
     renderQcRange();
     setInterval(function () {
+      if (document.documentElement.dataset.qcActivePage && document.documentElement.dataset.qcActivePage !== "ts") return;
       var h = JSON.stringify(arr(window.setups)) + "|" + [getTols().e, getTols().n, getTols().z].join(",");
       if (h !== __qcRangeHash) { __qcRangeHash = h; renderQcRange(); }
       injectSetupTools();
       wireIdSuggest();
-    }, 1200);
+    }, 1800);
   }
 
   // ---------------- Blocks map (Laser) ----------------
@@ -3158,9 +3164,10 @@ window.__qcFeaturesFileLoaded = true;
     else stack.appendChild(card);
     renderBlocksMap();
     setInterval(function () {
+      if (document.documentElement.dataset.qcActivePage && document.documentElement.dataset.qcActivePage !== "ls") return;
       var h = JSON.stringify(arr(window.sections));
       if (h !== __blkHash) { __blkHash = h; renderBlocksMap(); }
-    }, 1200);
+    }, 1800);
   }
 
 
@@ -3547,8 +3554,8 @@ window.__qcFeaturesFileLoaded = true;
         renderHistory();
       }, 60);
       setInterval(function () {
-        if (Date.now() - lastSaveAt > 5000) saveDraftNow();
-      }, 5000);
+        if (draftDirty && Date.now() - lastSaveAt > 15000) saveDraftNow();
+      }, 15000);
       /* الفحص الذاتي: لا يعمل تلقائياً إلا بطلب (?selftest=1 أو qcDebug) — لتقليل ضجيج الكونسول */
       var qcWantTest = false;
       try { qcWantTest = /(\?|&)selftest=1/.test(location.search) || !!localStorage.getItem("qcDebug"); } catch (e) {}

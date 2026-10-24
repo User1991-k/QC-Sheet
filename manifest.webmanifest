@@ -1,7 +1,7 @@
 {
   "name": "QC Survey App",
   "short_name": "QC Survey",
-  "description": "Field quality-control reports for Total Station, Laser Scanner, Static and GNSS surveys.",
+  "description": "QC Survey v321 phone-hardened offline app with active-page lifecycle, safe wrapping and compact mobile controls.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

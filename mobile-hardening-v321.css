@@ -1,0 +1,61 @@
+/* QC Survey v321 — phone overlap hardening. Desktop layout is intentionally unchanged. */
+@media (max-width:760px){
+  html,body{max-width:100%;overflow-x:clip}
+  main.page,main.page *{box-sizing:border-box}
+  main.page{max-width:100%;min-width:0}
+  main.page :where(.card,.card-bd,.field,.form-group,.gn-field,.gpr-field,.bf-field,.dpr-field,.cv-field,.stack,.grid,.row){min-width:0}
+  main.page :where(input:not([type=checkbox]):not([type=radio]),select,textarea){max-width:100%}
+  .card-hd,.dpr-section-head,.gpr-card-head,.dfp-head,.qc-fold-head{gap:7px;flex-wrap:wrap}
+  .card-hd :where(h2,h3),.dpr-section-head :where(h2,h3),.gpr-card-head :where(h2,h3){min-width:0;overflow-wrap:anywhere}
+  button,.btn,.cv-btn{white-space:normal;overflow-wrap:anywhere}
+
+  /* Static GNSS DMS cells must shrink as one row rather than widening the page. */
+  #view-sc .dmsfield{display:grid;width:100%;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) auto minmax(42px,.76fr);gap:3px}
+  #view-sc .dmsfield>.dms-seg,#view-sc .dmsfield>.dms-hemi-sel{width:100%!important;min-width:0!important;padding-inline:3px!important}
+  #view-sc .dmsfield>.qca-field-inline{width:100%!important;min-width:0!important;gap:2px!important}
+  #view-sc .dmsfield>.qca-field-inline>.dms-seg{width:auto!important;min-width:0!important;padding-inline:3px!important}
+
+  /* Converter heading: quality belongs on its own row, never over the title. */
+  #view-conv .conv-page-head{display:flex!important;align-items:flex-start!important;flex-wrap:wrap!important;gap:12px!important}
+  #view-conv .conv-page-head>.conv-mark{flex:0 0 52px}
+  #view-conv .conv-page-head>div:not(.conv-mark){flex:1 1 180px;min-width:0}
+  #view-conv .conv-page-head h1{font-size:22px!important;overflow-wrap:anywhere}
+  #view-conv .conv-page-head p{line-height:1.55!important;overflow-wrap:anywhere}
+  #view-conv .conv-page-head>.ufe-quality{flex:1 0 100%;order:5;width:100%;margin:0!important}
+  #view-conv .cv-route-box,#view-conv .cv-route-box>.qca-field-inline{width:100%;min-width:0}
+  #view-conv .cv-route-box select{width:100%!important;min-width:0!important}
+
+  /* The top page selector stays readable even beside global phone controls. */
+  .qc-page-switcher-trigger{grid-template-columns:32px minmax(0,1fr) 22px!important;gap:4px!important;padding:6px!important}
+  .qc-switch-icon{width:32px!important;height:32px!important;font-size:17px!important}
+  .qc-switch-arrow{width:22px!important;height:22px!important;font-size:15px!important}
+  .qc-switch-copy small{display:none!important}
+  .qc-switch-copy strong{font-size:11px!important;white-space:nowrap!important;word-break:normal!important}
+  .qc-table-menu-trigger>*{display:none!important}
+  .qc-action-menu-panel{max-height:calc(100dvh - 96px)!important;overflow:auto!important;overscroll-behavior:contain}
+
+  /* Keep optional fixed helpers reachable without covering a wide strip of fields. */
+  #qc-guide-fab{right:8px!important;bottom:68px!important;width:40px;height:40px;padding:0!important;font-size:0!important;display:grid;place-items:center;opacity:.82}
+  #qc-guide-fab:before{content:'?';font:900 18px/1 Arial,sans-serif}
+  #qc-assistant-fab{right:8px!important;bottom:116px!important;left:auto!important;width:40px!important;height:40px!important;padding:2px!important;opacity:.82}
+  #qc-assistant-fab span{width:34px!important;height:34px!important}
+  /* Protection remains available in Settings; its desktop status badge must not cover phone forms. */
+  #qc-protect-status{display:none!important}
+  body:has(input:focus,select:focus,textarea:focus) :is(#qc-guide-fab,#qc-assistant-fab){opacity:.18;pointer-events:none}
+}
+@media (max-width:360px){
+  main.page{padding-inline:7px!important}
+  .page-head{border-radius:15px!important}
+  #view-conv .conv-page-head>.conv-mark{width:46px;height:46px;flex-basis:46px;font-size:25px}
+  #view-conv .conv-page-head>div:not(.conv-mark){flex-basis:165px}
+  #view-flange .df-type>.qca-field-inline{flex:1 0 100%!important}
+  #view-flange .df-type select{width:100%!important;min-width:0!important}
+  #view-flange .df-dims label{flex:1 1 calc(50% - 5px);min-width:0}
+  #view-flange .df-dims label>.qca-field-inline{min-width:0!important}
+  #view-flange .df-dims input{width:100%!important;min-width:0!important}
+  #view-flange .df-appearance-row{grid-template-columns:34px minmax(0,1fr)!important;gap:6px!important}
+  #view-flange .df-appearance-row>.df-model-color-btn,#view-flange .df-appearance-row>.df-component-label,#view-flange .df-appearance-row>.df-component-focus{grid-column:1/-1!important}
+  #view-flange .df-model-colors>summary{min-width:0;overflow-wrap:anywhere}
+  #view-flange .df-appearance-manager,#view-flange .df-appearance-help{max-width:100%;min-width:0;overflow-wrap:anywhere}
+}
+@media print{#qc-guide-fab,#qc-assistant-fab,#qc-protect-status{display:none!important}}

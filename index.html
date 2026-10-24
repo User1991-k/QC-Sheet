@@ -2389,22 +2389,25 @@
   <link rel="stylesheet" href="survey-pro.css" />
   <link rel="stylesheet" href="survey-pro-advanced.css" />
   <link rel="stylesheet" href="educational-guide.css" />
-  <link rel="stylesheet" href="qc-assistant.css?v=292.0" />
-  <link rel="stylesheet" href="qc-field-coach.css?v=292.0" />
-  <link rel="stylesheet" href="qc-assistant-learning.css?v=292.0" />
+  <link rel="stylesheet" href="qc-assistant.css?v=294.0" />
+  <link rel="stylesheet" href="qc-field-coach.css?v=321.0" />
+  <link rel="stylesheet" href="qc-assistant-learning.css?v=294.0" />
+  <link rel="stylesheet" href="ts-project-info.css?v=294.0" />
+  <link rel="stylesheet" href="ts-batch-ocr.css?v=299.0" />
+  <link rel="stylesheet" href="electronic-signature.css?v=295.0" />
   <link rel="stylesheet" href="ui-workspace.css" />
   <link rel="stylesheet" href="responsive-topbar.css" />
   <link rel="stylesheet" href="smart-datetime.css?v=285.0" />
-  <link rel="stylesheet" href="design-system-pro.css?v=292.0" />
+  <link rel="stylesheet" href="design-system-pro.css?v=316.0" />
   <link rel="stylesheet" href="bilingual-translation.css?v=286.0" />
   <link rel="stylesheet" href="global-quality.css" />
-  <link rel="stylesheet" href="dc-flange.css" />
-  <link rel="stylesheet" href="dc-flange-pro.css" />
+  <link rel="stylesheet" href="dc-flange.css?v=317.0" />
+  <link rel="stylesheet" href="dc-flange-pro.css?v=317.0" />
   <link rel="stylesheet" href="dc-sketch-pro.css" />
   <link rel="stylesheet" href="gpr-logging.css" />
   <link rel="stylesheet" href="gpr-columns-pro.css" />
   <link rel="stylesheet" href="navigation-wrap-touch.css" />
-  <link rel="stylesheet" href="rd-line-detection.css?v=281.0" />
+  <link rel="stylesheet" href="rd-line-detection.css?v=315.0" />
   <link rel="stylesheet" href="page-navigation-pro.css?v=281.0" />
   <!-- Drone Checklist is embedded directly in this final index; no separate duplicate file. -->
   <style id="drone-checklist-styles">
@@ -2446,12 +2449,17 @@
 
 
   </style>
-  <link rel="stylesheet" href="dpr.css?v=292.0" />
+  <link rel="stylesheet" href="dpr.css?v=294.0" />
   <link rel="stylesheet" href="mobile-mapping.css?v=278.0" />
   <link rel="stylesheet" href="backfilling.css" />
   <link rel="stylesheet" href="voice-entry.css" />
-  <link rel="stylesheet" href="smart-entry-pro.css" />
+  <link rel="stylesheet" href="smart-entry-pro.css?v=296.0" />
+  <link rel="stylesheet" href="ocr-ai-pro.css?v=296.0" />
   <link rel="stylesheet" href="smart-quality-pro.css" />
+  <link rel="stylesheet" href="ui-polish-v320.css?v=321.0" />
+  <link rel="stylesheet" href="universal-field-engine-v320.css?v=321.0" />
+  <link rel="stylesheet" href="page-lifecycle-v320.css?v=321.0" />
+  <link rel="stylesheet" href="mobile-hardening-v321.css?v=321.0" />
 </head>
 <body>
   <!-- ===== v197: حارس الإقلاع =====
@@ -2509,7 +2517,7 @@
       } catch (e) { /* متصفح قديم: نكتفي بحارس __arr */ }
     });
   })();
-  window.__QC_VERSION = "v292.0";
+  window.__QC_VERSION = "v321.0";
 
   /* v206: كاشف «الكتلة الميتة». إن مات السكربت الرئيسي بخطأ صياغة، تبقى
      __qcMainScriptDone غير معرّفة. نُخبر المستخدم بالسبب الحقيقي بلافتة
@@ -2607,8 +2615,8 @@
       <div class="brand">
         <div class="brand-mark">QC</div>
         <div class="brand-text">
-          <strong>QC Survey App</strong>
-          <span>Field quality control reports</span>
+          <strong>QC Survey App · v321</strong>
+          <span>Direct offline · No login · RD multi-drawing</span>
         </div>
       </div>
       <nav class="tabs" aria-label="Modules">
@@ -2679,13 +2687,13 @@
         </div>
       </section>
 
+
       <div id="setups" class="stack"></div>
 
       <div class="export-bar">
         <p>Export all project info, setups, coordinates, and QC differences to PDF.</p>
         <div class="export-actions">
           <button class="btn btn-secondary" id="btn-ts-xls" type="button" title="عبّئ الجدول من ملف Excel أو CSV">📥 Import Excel</button>
-          <button class="btn btn-secondary" id="btn-ts-bulk" type="button" title="املأ كل النقاط من صورة واحدة">📷 Fill All Points</button>
           <button class="btn btn-secondary" id="btn-add-setup-bottom" type="button">+ Add Setup</button>
           <button class="btn btn-primary" id="btn-ts-pdf-bottom" type="button">Export</button>
         </div>
@@ -3226,7 +3234,9 @@
   </main>
 
   <input type="file" id="gn-cam-file" accept="image/*" class="hidden" />
-  <input type="file" id="bulk-cam-file" accept="image/*" class="hidden" />
+  <input type="file" id="bulk-cam-file" accept="image/*" multiple class="hidden" />
+  <input type="file" id="bulk-table-file" accept="image/*" class="hidden" />
+  <input type="file" id="bulk-capture-file" accept="image/*" capture="environment" class="hidden" />
 
   <!-- Crop numbers region before OCR -->
   <div id="crop-modal" class="crop-backdrop hidden" aria-hidden="true">
@@ -3693,6 +3703,12 @@
         if (tab === "sc" && typeof wireEnterNavigation === "function") {
           setTimeout(function () { wireEnterNavigation(); }, 0);
         }
+        /* Keep lifecycle containment synchronized even after language/UI rerenders. */
+        setTimeout(function () {
+          if (window.QCPageLifecycle && typeof window.QCPageLifecycle.apply === "function") {
+            window.QCPageLifecycle.apply("tab-handler");
+          }
+        }, 0);
       });
     });
     /* Query links and startup scripts may open a requested page directly. */
@@ -5175,6 +5191,7 @@
     var bulkPage = "ts";
     var bulkRows = [];
     var bulkAlsoEnd = false;
+    var bulkStartSetup = 0;
 
     function bulkNormNum(tok) {
       var t = String(tok == null ? "" : tok).replace(/\s/g, "");
@@ -5268,6 +5285,8 @@
     async function processBulkCapture(file, page) {
       if (ocrBusy) { toast("Please wait, image is still processing…", "err"); return; }
       ocrBusy = true;
+      var live = document.getElementById("ts-batch-live-status");
+      if (live && (page || "ts") === "ts") { live.textContent = "جارٍ قراءة جميع النقاط من الصورة…"; live.classList.add("working"); }
       var t = toast("Reading every point in the image…", "load");
       try {
         var best = await ocrBestFromPhoto(file);
@@ -5280,10 +5299,57 @@
         }
         bulkPage = page || "ts";
         bulkRows = rows;
+        if (live && bulkPage === "ts") { live.textContent = "تم العثور على " + rows.length + " نقاط — راجع الجدول ثم اضغط Fill Table."; live.classList.remove("working"); live.classList.add("ready"); }
         openBulkModal(best.previewUrl || best.rawUrl);
       } catch (e) {
         try { t.remove(); } catch (e2) {}
         toast("Could not read the image.", "err");
+      } finally { ocrBusy = false; }
+    }
+
+    async function processBulkCaptures(files, page) {
+      files = Array.prototype.slice.call(files || []).filter(function (f) { return f && /^image\//.test(f.type || "image/"); }).slice(0, 50);
+      if (!files.length) return;
+      if (ocrBusy) { toast("Please wait, OCR is already processing…", "err"); return; }
+      ocrBusy = true;
+      var live = document.getElementById("ts-batch-live-status");
+      if (live) { live.textContent = "تم اختيار " + files.length + " صور — جارٍ التحليل بالتسلسل…"; live.classList.add("working"); }
+      var t = toast("Reading image 1 / " + files.length + "…", "load", 120000);
+      var all = [], failed = [];
+      try {
+        for (var i = 0; i < files.length; i++) {
+          t.textContent = "Reading image " + (i + 1) + " / " + files.length + ": " + (files[i].name || "Photo");
+          try {
+            var best = await ocrBestFromPhoto(files[i]);
+            var rows = parseCoordRows(best.text || "");
+            if (!rows.length) { failed.push(files[i].name || ("Image " + (i + 1))); continue; }
+            rows.forEach(function (r, j) {
+              r.source = files[i].name || ("Image " + (i + 1));
+              r.sourceIndex = i;
+              r.sourceRow = j;
+              r._seq = all.length;
+              r.confidence = Math.round(Number(best.confidence) || 0);
+              all.push(r);
+            });
+          } catch (oneErr) { failed.push(files[i].name || ("Image " + (i + 1))); }
+        }
+        t.remove();
+        if (!all.length) {
+          if (live) { live.textContent = "لم تُكتشف إحداثيات موثوقة — جرّب صوراً أوضح أوصورة جدول مقصوصة."; live.classList.remove("working"); }
+          toast("No coordinate rows were recognised. Use clear images or one table image, then crop more tightly.", "err", 7000);
+          return;
+        }
+        bulkPage = page || "ts";
+        bulkRows = all;
+        openBulkModal("");
+        var note = document.getElementById("bulk-batch-result");
+        if (note) note.textContent = all.length + " point(s) found from " + files.length + " image(s)" + (failed.length ? " · " + failed.length + " image(s) need review" : "") + ".";
+        if (live) { live.textContent = "تم العثور على " + all.length + " نقاط من " + files.length + " صور — راجع الجدول ثم اضغط Fill Table."; live.classList.remove("working"); live.classList.add("ready"); }
+        if (failed.length) toast(failed.length + " image(s) had no reliable coordinate row; the recognised rows are ready for review.", "err", 6500);
+      } catch (e) {
+        try { t.remove(); } catch (e2) {}
+        if (live) { live.textContent = "تعذر إكمال تحليل الصور: " + e.message; live.classList.remove("working"); }
+        toast("Batch OCR could not finish: " + e.message, "err", 7000);
       } finally { ocrBusy = false; }
     }
 
@@ -5295,9 +5361,15 @@
       d.innerHTML =
         '<div class="modal" role="dialog" aria-modal="true" style="max-width:720px">' +
           '<h3 style="font-size:16px;font-weight:800">📷 Points found in the image</h3>' +
-          '<p style="font-size:12.5px;color:var(--text-2);margin:4px 0 12px;line-height:1.5">' +
-            'Review, edit or delete any row, then press Fill. Rows are read top-to-bottom from the image.' +
+          '<p style="font-size:12.5px;color:var(--text-2);margin:4px 0 8px;line-height:1.5">' +
+            'Choose several point photos or one table image. Review every value; nothing is filled until you confirm.' +
           '</p>' +
+          '<div id="bulk-batch-result" class="ts-batch-result"></div>' +
+          '<div class="ts-batch-controls">' +
+            '<label>Point order<select id="bulk-order"><option value="source">Image / table order</option><option value="id">Point ID (natural)</option><option value="e">Easting ascending</option><option value="n">Northing ascending</option><option value="reverse">Reverse current order</option></select></label>' +
+            '<label>Total Station destination<select id="bulk-fill-mode"><option value="empty">First empty rows in selected Setup (recommended)</option><option value="replace">Replace from selected Setup / Row 01</option></select></label>' +
+          '</div>' +
+          '<p class="ts-batch-rule"><b>Rule:</b> five points per Total Station setup. More than five points automatically continue into a new setup.</p>' +
           '<div id="bulk-rows" style="max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px"></div>' +
           '<label class="chk" style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin:10px 0 0">' +
             '<input type="checkbox" id="bulk-also-end" /> <span>Also copy into the <b>End</b> columns (GNSS)</span>' +
@@ -5315,6 +5387,15 @@
           if (r.geo) { var a = r.lat; r.lat = r.lon; r.lon = a; }
           else { var b = r.e; r.e = r.n; r.n = b; }
         });
+        renderBulkRows();
+      });
+      document.getElementById("bulk-order").addEventListener("change", function () {
+        var v = this.value;
+        if (v === "reverse") bulkRows.reverse();
+        else if (v === "id") bulkRows.sort(function (a, b) { return String(a.id || "").localeCompare(String(b.id || ""), undefined, { numeric: true, sensitivity: "base" }); });
+        else if (v === "e") bulkRows.sort(function (a, b) { return Number(a.e || a.lon || 0) - Number(b.e || b.lon || 0); });
+        else if (v === "n") bulkRows.sort(function (a, b) { return Number(a.n || a.lat || 0) - Number(b.n || b.lat || 0); });
+        else bulkRows.sort(function (a, b) { return Number(a._seq || 0) - Number(b._seq || 0); });
         renderBulkRows();
       });
       document.getElementById("bulk-apply").addEventListener("click", function () {
@@ -5336,15 +5417,20 @@
       if (!host) return;
       var geo = bulkRows.some(function (r) { return r.geo; });
       var head = geo
-        ? '<tr><th style="width:120px">ID</th><th>Latitude</th><th>Longitude</th><th>Height</th><th style="width:40px"></th></tr>'
-        : '<tr><th style="width:120px">ID</th><th>Easting</th><th>Northing</th><th>Elevation</th><th style="width:40px"></th></tr>';
+        ? '<tr><th>#</th><th style="width:120px">ID</th><th>Latitude</th><th>Longitude</th><th>Height</th><th>Source</th><th>Status</th><th style="width:40px"></th></tr>'
+        : '<tr><th>#</th><th style="width:120px">ID</th><th>Easting</th><th>Northing</th><th>Elevation</th><th>Source</th><th>Status</th><th style="width:40px"></th></tr>';
+      var idCount = {}; bulkRows.forEach(function (r) { var k = String(r.id || "").trim().toLowerCase(); if (k) idCount[k] = (idCount[k] || 0) + 1; });
       var body = bulkRows.map(function (r, i) {
         var c1 = geo ? r.lat : r.e, c2 = geo ? r.lon : r.n, c3 = geo ? r.h : r.z;
-        return '<tr>' +
+        var key = String(r.id || "").trim().toLowerCase(), duplicate = !!(key && idCount[key] > 1), incomplete = !(c1 && c2), status = incomplete ? "Missing E/N" : (duplicate ? "Duplicate ID" : "Ready");
+        return '<tr class="' + (incomplete || duplicate ? 'ts-batch-warn' : '') + '">' +
+          '<td class="center"><b>' + (i + 1) + '</b></td>' +
           '<td><input class="input" data-bi="' + i + '" data-bf="id" value="' + String(r.id || "").replace(/"/g, "&quot;") + '" /></td>' +
           '<td><input class="input" inputmode="decimal" data-bi="' + i + '" data-bf="c1" value="' + String(c1 || "").replace(/"/g, "&quot;") + '" /></td>' +
           '<td><input class="input" inputmode="decimal" data-bi="' + i + '" data-bf="c2" value="' + String(c2 || "").replace(/"/g, "&quot;") + '" /></td>' +
           '<td><input class="input" inputmode="decimal" data-bi="' + i + '" data-bf="c3" value="' + String(c3 || "").replace(/"/g, "&quot;") + '" /></td>' +
+          '<td><small class="ts-batch-source">' + String(r.source || 'Single image').replace(/[&<>]/g, '') + '</small></td>' +
+          '<td><span class="ts-batch-state ' + (status === 'Ready' ? 'ok' : 'warn') + '">' + status + '</span></td>' +
           '<td class="center"><button type="button" class="btn-ghost" data-bdel="' + i + '" title="Remove">✕</button></td>' +
         '</tr>';
       }).join("");
@@ -5382,14 +5468,19 @@
       var page = bulkPage;
       var n = 0;
       if (page === "ts") {
-        var perSetup = 5;
-        var need = Math.ceil(rows.length / perSetup);
-        var addBtn = document.getElementById("btn-add-setup-bottom");
-        var guard = 0;
-        while (setups.length < need && addBtn && guard++ < 40) addBtn.click();
+        var perSetup = 5, modeEl = document.getElementById("bulk-fill-mode"), fillMode = modeEl ? modeEl.value : "empty";
+        var addBtn = document.getElementById("btn-add-setup-bottom"), guard = 0, slots = [];
+        function collectSlots() {
+          slots = [];
+          setups.forEach(function (setup, si) { if (si < Math.max(0, bulkStartSetup || 0)) return; setup.rows.forEach(function (row, ri) {
+            if (fillMode === "replace" || !(String(row.easting || "").trim() || String(row.northing || "").trim() || String(row.elevation || "").trim() || String(row.id || "").trim())) slots.push({ s: si, k: ri });
+          }); });
+        }
+        collectSlots();
+        while (slots.length < rows.length && addBtn && guard++ < 40) { addBtn.click(); collectSlots(); }
         rows.forEach(function (r, i) {
-          var s = Math.floor(i / perSetup), k = i % perSetup;
-          var q = function (f) { return document.querySelector('#setups input[data-s="' + s + '"][data-r="' + k + '"][data-f="' + f + '"]'); };
+          var slot = slots[i]; if (!slot) return;
+          var q = function (f) { return document.querySelector('#setups input[data-s="' + slot.s + '"][data-r="' + slot.k + '"][data-f="' + f + '"]'); };
           if (r.id && setInputVal(q("id"), r.id)) n++;
           if (r.geo) { if (setInputVal(q("easting"), r.lon)) n++; if (setInputVal(q("northing"), r.lat)) n++; if (r.h && setInputVal(q("elevation"), r.h)) n++; }
           else { if (setInputVal(q("easting"), r.e)) n++; if (setInputVal(q("northing"), r.n)) n++; if (r.z && setInputVal(q("elevation"), r.z)) n++; }
@@ -5443,7 +5534,7 @@
     }
 
     function wireBulkFill() {
-      [["btn-ts-bulk", "ts"], ["btn-sc-bulk", "sc"], ["btn-gnss-bulk", "gnss"]].forEach(function (pair) {
+      [["btn-sc-bulk", "sc"], ["btn-gnss-bulk", "gnss"]].forEach(function (pair) {
         var btn = document.getElementById(pair[0]);
         if (!btn) return;
         btn.addEventListener("click", function () {
@@ -5453,11 +5544,29 @@
         });
       });
       var inp = document.getElementById("bulk-cam-file");
+      var galleryTop = null;
       if (inp) inp.addEventListener("change", function () {
-        var file = inp.files && inp.files[0];
+        var files = Array.prototype.slice.call(inp.files || []);
         inp.value = "";
-        if (!file) return;
-        beginCaptureWithCrop(file, { mode: "bulk", page: bulkPage, btnEl: null });
+        if (!files.length) return;
+        var live = document.getElementById("ts-batch-live-status");
+        if (live) live.textContent = "تم اختيار " + files.length + " صور.";
+        if (files.length === 1) beginCaptureWithCrop(files[0], { mode: "bulk", page: bulkPage, btnEl: galleryTop });
+        else processBulkCaptures(files, bulkPage);
+      });
+      var tableBtn = null, tableInp = document.getElementById("bulk-table-file");
+      if (tableInp) tableInp.addEventListener("change", function () {
+        var file = tableInp.files && tableInp.files[0]; tableInp.value = "";
+        var live = document.getElementById("ts-batch-live-status");
+        if (file && live) live.textContent = "تم اختيار صورة جدول — قص الجدول ثم اضغط Analyze Crop.";
+        if (file) beginCaptureWithCrop(file, { mode: "bulk", page: "ts", btnEl: tableBtn });
+      });
+      var captureBtn = null, captureTop = null, captureInp = document.getElementById("bulk-capture-file");
+      if (captureInp) captureInp.addEventListener("change", function () {
+        var file = captureInp.files && captureInp.files[0]; captureInp.value = "";
+        var live = document.getElementById("ts-batch-live-status");
+        if (file && live) live.textContent = "تم التقاط صورة — قص الأرقام ثم اضغط Analyze Crop.";
+        if (file) beginCaptureWithCrop(file, { mode: "bulk", page: "ts", btnEl: captureTop || captureBtn });
       });
     }
 
@@ -5548,6 +5657,8 @@
       if (btnCancel) btnCancel.addEventListener("click", function () {
         setCropOpen(false);
         cropState.pending = null;
+        var live = document.getElementById("ts-batch-live-status");
+        if (live) { live.textContent = "جاهز — يمكنك اختيار عدة صور بنفس الوقت."; live.classList.remove("working", "ready"); }
       });
       if (btnFull) btnFull.addEventListener("click", async function () {
         var img = document.getElementById("crop-image");
@@ -5652,6 +5763,41 @@ async function processCapture(file, btnEl) {
       return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
     }
 
+    function closeSetupCameraMenu() {
+      var old = document.getElementById("ts-setup-camera-dropdown");
+      if (old) old.remove();
+    }
+    function openSetupCameraMenu(si, anchor) {
+      closeSetupCameraMenu();
+      bulkPage = "ts";
+      bulkStartSetup = Math.max(0, Number(si) || 0);
+      var menu = document.createElement("div");
+      menu.id = "ts-setup-camera-dropdown";
+      menu.className = "ts-setup-camera-dropdown";
+      menu.setAttribute("role", "menu");
+      menu.setAttribute("data-qc-i18n-skip", "");
+      menu.innerHTML = '<header><b>Setup '+String(bulkStartSetup + 1).padStart(2, "0")+' · Camera OCR</b><small>تبدأ التعبئة من أول صف فارغ في هذا الـSetup</small></header>' +
+        '<button type="button" data-act="capture"><b>📸 التقاط صورة نقطة</b><span>Capture one point now</span></button>' +
+        '<button type="button" data-act="gallery"><b>🖼 اختيار صورة أوعدة صور من الاستوديو</b><span>Choose one, five, or more images together</span></button>' +
+        '<button type="button" data-act="table"><b>▦ اختيار صورة جدول إحداثيات</b><span>Five or more rows in one table image</span></button>';
+      document.body.appendChild(menu);
+      var r = anchor.getBoundingClientRect(), mw = Math.min(360, window.innerWidth - 20), left = Math.max(10, Math.min(window.innerWidth - mw - 10, r.left));
+      menu.style.width = mw + "px";
+      menu.style.left = left + "px";
+      menu.style.top = Math.min(window.innerHeight - menu.offsetHeight - 10, r.bottom + 6) + "px";
+      menu.querySelectorAll("button[data-act]").forEach(function (b) { b.addEventListener("click", function () {
+        var act = b.dataset.act; closeSetupCameraMenu();
+        var input = document.getElementById(act === "capture" ? "bulk-capture-file" : act === "table" ? "bulk-table-file" : "bulk-cam-file");
+        if (input) input.click();
+      }); });
+    }
+    document.addEventListener("pointerdown", function (e) {
+      var m = document.getElementById("ts-setup-camera-dropdown");
+      if (m && !m.contains(e.target) && !(e.target.closest && e.target.closest(".ts-setup-camera-menu"))) closeSetupCameraMenu();
+    });
+    window.addEventListener("resize", closeSetupCameraMenu);
+    window.addEventListener("scroll", closeSetupCameraMenu, true);
+
     function renderSetups() {
       setupsEl.innerHTML = setups.map(function (setup, si) {
         var de = diff(setup.qcFixed.easting, setup.qcMeasured.easting);
@@ -5686,7 +5832,10 @@ async function processCapture(file, btnEl) {
                   "</select>" +
                 "</label>" +
               "</div>" +
-              '<button type="button" class="btn-ghost remove-setup" data-s="'+si+'" title="Remove setup"'+(setups.length<=1?" disabled":"")+'>✕</button>' +
+              '<div class="ts-setup-head-actions">' +
+                '<button type="button" class="btn-ghost ts-setup-camera-menu" data-s="'+si+'" title="Camera / gallery OCR options">'+camSvg()+' <span>Camera</span> ▾</button>' +
+                '<button type="button" class="btn-ghost remove-setup" data-s="'+si+'" title="Remove setup"'+(setups.length<=1?" disabled":"")+'>✕</button>' +
+              '</div>' +
             "</div>" +
             '<div class="card-bd tight">' +
               '<div class="table-wrap">' +
@@ -5765,6 +5914,9 @@ async function processCapture(file, btnEl) {
       });
       /* v175.1: بعد إعادة الرسم تُفقد ألوان الفروق ⟶ أعد تلوينها */
       try { setTimeout(function () { if (window.__qcApplyTolStyles) window.__qcApplyTolStyles(); }, 0); } catch (e) {}
+      setupsEl.querySelectorAll(".ts-setup-camera-menu").forEach(function (btn) {
+        btn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openSetupCameraMenu(+btn.dataset.s, btn); });
+      });
       setupsEl.querySelectorAll(".remove-setup").forEach(function (btn) {
         btn.addEventListener("click", function () {
           if (setups.length <= 1) return;
@@ -7848,6 +8000,21 @@ async function processCapture(file, btnEl) {
         ], 2);
         y = endCard(doc, y);
 
+        /* v294: additional editable Project Information copies belong to this same
+           Total Station report and are printed before the setup records. */
+        var extraProjectInfo = window.getTsAdditionalProjectInfo ? window.getTsAdditionalProjectInfo() : [];
+        __arr(extraProjectInfo).forEach(function (info, ii) {
+          y = beginCard(doc, y, "Project Information " + String(ii + 2).padStart(2, "0"));
+          y = addInfoGrid(doc, y, [
+            { label: "Project", value: info.project || "" },
+            { label: "Site Name", value: info.site || "" },
+            { label: "Observer", value: info.observer || "" },
+            { label: "Site Supervisor", value: info.supervisor || "" },
+            { label: "Date", value: info.date ? formatEnglishDate(info.date) : "" }
+          ], 2);
+          y = endCard(doc, y);
+        });
+
         var tols = getQcTols();
         var ptsCount = 0, passCount = 0, failCount = 0;
         setups.forEach(function (setup) {
@@ -9819,6 +9986,7 @@ function formatDmsDisplay(value, isLat) {
     renderSections();
     renderChecklist();
     wireCropTool();
+    window.QCTotalStationBatchOCR = { processFiles: function (files, setupIndex) { bulkStartSetup = Math.max(0, Number(setupIndex) || 0); return processBulkCaptures(files, 'ts'); }, getRows: function () { return bulkRows.slice(); }, apply: applyBulkRows, openMenu: function (setupIndex, anchor) { openSetupCameraMenu(setupIndex, anchor || document.querySelector('.ts-setup-camera-menu[data-s=\"'+setupIndex+'\"]')); }, openReview: function (rows, setupIndex) { bulkPage = 'ts'; bulkStartSetup = Math.max(0, Number(setupIndex) || 0); bulkRows = (rows || []).map(function (r, i) { r._seq = i; return r; }); openBulkModal(''); } };
     try { wireBulkFill(); } catch (eBulk) { console.warn('bulk wiring failed', eBulk); } // FIX: was defined but never called — crop buttons had no handlers
     try { if (typeof updateTrueVerticalHT === "function") updateTrueVerticalHT(); } catch (e) {}
     try { if (typeof wireDmsInputs === "function") wireDmsInputs(); } catch (e) {}
@@ -10077,7 +10245,7 @@ function formatDmsDisplay(value, isLat) {
   })();
   </script>
 
-  <script src="features.js"></script>
+  <script src="features.js?v=321.0"></script>
   <script src="converters.js"></script>
   <script src="survey-pro.js"></script>
   <script src="survey-pro-advanced.js"></script>
@@ -10087,21 +10255,23 @@ function formatDmsDisplay(value, isLat) {
   <script src="protection.js"></script>
   <script src="i18n.js"></script>
   <script src="educational-guide.js"></script>
-  <script src="qc-ai-reference.js?v=292.0"></script>
+  <script src="qc-ai-reference.js?v=299.0"></script>
   <script src="qc-assistant-learning.js?v=292.1"></script>
-  <script src="qc-assistant-knowledge.js?v=292.0"></script>
-  <script src="qc-assistant.js?v=292.0"></script>
-  <script src="qc-field-coach.js?v=292.0"></script>
+  <script src="qc-assistant-knowledge.js?v=294.0"></script>
+  <script src="qc-assistant.js?v=296.2"></script>
+  <script src="qc-field-coach.js?v=321.0"></script>
+  <script src="ts-project-info.js?v=294.0"></script>
+  <script src="electronic-signature.js?v=295.0"></script>
   <script src="ui-workspace.js?v=279.0"></script>
-  <script src="rd-line-detection.js?v=281.0"></script>
+  <script src="rd-line-detection.js?v=315.0"></script>
   <script src="page-navigation-pro.js?v=281.0"></script>
   <script src="smart-datetime.js?v=285.0"></script>
-  <script src="design-system-pro.js?v=292.0"></script>
+  <script src="design-system-pro.js?v=321.0"></script>
   <script src="global-quality.js"></script>
   <script src="vendor/three-r128.min.js"></script>
   <script src="vendor/OrbitControls-r128.js"></script>
-  <script src="dc-flange.js"></script>
-  <script src="dc-flange-pro.js"></script>
+  <script src="dc-flange.js?v=321.0"></script>
+  <script src="dc-flange-pro.js?v=317.0"></script>
   <script src="dc-sketch-pro.js"></script>
   <script src="gpr-logging.js"></script>
   <!-- Complete Drone Checklist implementation embedded in index.html. -->
@@ -10161,12 +10331,15 @@ var last=document.documentElement.dir;new MutationObserver(function(){if(documen
 })();
   </script>
   <script src="mobile-mapping.js?v=278.0"></script>
-  <script src="dpr.js?v=292.0"></script>
+  <script src="dpr.js?v=294.0"></script>
   <script src="backfilling.js"></script>
   <script src="voice-entry.js"></script>
-  <script src="smart-entry-pro.js"></script>
+  <script src="smart-entry-pro.js?v=318.0"></script>
+  <script src="universal-field-engine-v320.js?v=321.0"></script>
   <script src="smart-quality-pro.js"></script>
   <script src="bilingual-translation.js?v=286.0"></script>
+  <script src="ui-polish-v320.js?v=321.0"></script>
+  <script src="page-lifecycle-v320.js?v=321.0"></script>
   <script>
   /* v258: resilient features.js loader — retries once to recover stale PWA/browser caches. */
   (function () {
@@ -10362,13 +10535,6 @@ var last=document.documentElement.dir;new MutationObserver(function(){if(documen
           document.body.removeChild(ta);
           return ok;
         } catch (e2) { return false; }
-      };
-    }
-  })();
-</script>
-</body>
-</html>
-n false; }
       };
     }
   })();

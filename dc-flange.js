@@ -900,6 +900,8 @@
       try {
         x.ro.disconnect();
         clearTimeout(x.viewSaveTimer);
+        if (x.raf) cancelAnimationFrame(x.raf);
+        x.raf = 0;
         x.renderer.dispose();
         x.renderer.domElement.remove();
       } catch (e) {}
@@ -907,10 +909,53 @@
     instances = {};
   }
   function initAll() {
-    if (!window.THREE) return;
     host.querySelectorAll(".df-report").forEach(function (el) {
-      init3D(el, S.pages[+el.dataset.page]);
+      var p = S.pages[+el.dataset.page];
+      if (!window.THREE || !THREE.OrbitControls) {
+        initFallback2D(el, p, "3D library unavailable");
+        return;
+      }
+      try {
+        init3D(el, p);
+      } catch (err) {
+        console.error("DC Flange 3D initialization failed; using safe 2D drawing.", err);
+        initFallback2D(el, p, err && err.message);
+      }
     });
+  }
+  function initFallback2D(el, p, reason) {
+    var box = el.querySelector(".df-webgl"), ann = el.querySelector(".df-annotation"), txt = el.querySelector(".df-text-layer"), model = document.createElement("canvas"), ctx = model.getContext("2d");
+    box.querySelectorAll("canvas:not(.df-annotation):not(.df-text-layer)").forEach(function(c){c.remove()});
+    model.className = "df-fallback-model";
+    model.setAttribute("aria-label", T("Flange safe 2D drawing", "رسم الفلنجة الثنائي الآمن"));
+    box.insertBefore(model, ann);
+    var controls = {enabled:true,autoRotate:false,target:{toArray:function(){return[0,0,0]}},update:function(){},addEventListener:function(){},getAzimuthalAngle:function(){return 0}}, renderer = {domElement:model,dispose:function(){},render:function(){drawFallbackModel(inst)},setSize:function(){drawFallbackModel(inst)}}, camera = {position:{toArray:function(){return[8,4,8]}},aspect:1,updateProjectionMatrix:function(){}}, inst = {el:el,p:p,scene:null,camera:camera,renderer:renderer,controls:controls,group:null,ann:ann,ctx:ann.getContext("2d"),txt:txt,tctx:txt.getContext("2d"),textMode:false,moveMode:false,textHits:[],dragText:null,drawTool:"orbit",undoStack:[],viewAnimating:false,viewSaveTimer:null,dead:false,fallback2D:true,fallbackCtx:ctx};
+    instances[p.id] = inst;
+    sizeFallbackModel(inst);
+    sizeAnnotation(inst, p.annotation);
+    sizeTextLayer(inst);
+    setupDraw(inst);
+    setupTextPlacement(inst);
+    var badge = document.createElement("div");
+    badge.className = "df-safe2d-badge";
+    badge.textContent = T("Safe 2D drawing · 3D is unavailable on this browser", "رسم ثنائي آمن · العرض الثلاثي غير متاح في هذا المتصفح");
+    badge.title = reason || "";
+    box.appendChild(badge);
+    el.querySelectorAll("[data-view],[data-view-step],[data-action=auto-rotate],[data-action=smart-orbit]").forEach(function(b){b.disabled=true;b.title=T("Available in 3D mode only", "متاح في العرض الثلاثي فقط")});
+    var resize=function(){if(inst.dead||!box.clientWidth)return;sizeFallbackModel(inst);sizeAnnotation(inst,p.annotation);sizeTextLayer(inst)};
+    if(window.ResizeObserver){var ro=new ResizeObserver(resize);ro.observe(box);inst.ro=ro}else{window.addEventListener("resize",resize);inst.ro={disconnect:function(){window.removeEventListener("resize",resize)}};}
+  }
+  function sizeFallbackModel(inst) {
+    var c=inst.renderer.domElement,r=c.parentElement.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(320,Math.round(r.width||760)),h=Math.max(240,Math.round(r.height||320));
+    c.width=Math.round(w*d);c.height=Math.round(h*d);c.style.width=w+"px";c.style.height=h+"px";inst.fallbackCtx.setTransform(d,0,0,d,0,0);drawFallbackModel(inst,w,h);
+  }
+  function drawFallbackModel(inst, width, height) {
+    if(!inst||!inst.fallbackCtx)return;var c=inst.renderer.domElement,ctx=inst.fallbackCtx,d=Math.min(devicePixelRatio||1,2),w=width||c.width/d,h=height||c.height/d,p=inst.p,colors=p.colors||{},pipe=colors.pipe||"#64748b",left=colors.left||"#2563eb",right=colors.right||"#0f766e",bolt=colors.bolt||"#334155",cx=w*.5,cy=h*.52,R=Math.min(h*.31,w*.16),inner=R*.47,count=Math.max(4,Math.min(32,Math.round(num(p.boltNo,8))));
+    ctx.clearRect(0,0,w,h);var g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,"#f8fafc");g.addColorStop(1,"#e7eef5");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.strokeStyle="#d8e2ec";ctx.lineWidth=1;for(var gx=20;gx<w;gx+=40){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke()}for(var gy=20;gy<h;gy+=40){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke()}
+    function ring(x,col){ctx.save();ctx.fillStyle=col;ctx.strokeStyle="#0f172a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,cy,R,0,Math.PI*2);ctx.arc(x,cy,inner,0,Math.PI*2,true);ctx.fill("evenodd");ctx.stroke();for(var i=0;i<count;i++){var a=i*Math.PI*2/count,bx=x+Math.cos(a)*R*.72,by=cy+Math.sin(a)*R*.72;ctx.fillStyle="#f8fafc";ctx.strokeStyle=bolt;ctx.lineWidth=2;ctx.beginPath();ctx.arc(bx,by,Math.max(3,R*.065),0,Math.PI*2);ctx.fill();ctx.stroke()}ctx.restore()}
+    ctx.fillStyle=pipe;ctx.strokeStyle="#334155";ctx.lineWidth=3;ctx.fillRect(cx-R*1.9,cy-inner*.65,R*3.8,inner*1.3);ctx.strokeRect(cx-R*1.9,cy-inner*.65,R*3.8,inner*1.3);
+    if(p.type==="pipe"){ctx.fillStyle=pipe;ctx.fillRect(cx-R*2.4,cy-R*.52,R*4.8,R*1.04);ctx.strokeRect(cx-R*2.4,cy-R*.52,R*4.8,R*1.04);ctx.beginPath();ctx.ellipse(cx-R*2.4,cy,R*.28,R*.52,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.beginPath();ctx.ellipse(cx+R*2.4,cy,R*.28,R*.52,0,0,Math.PI*2);ctx.fill();ctx.stroke()}else if(p.type==="half-flange"){ring(cx,left)}else{ring(cx-R*.68,left);ring(cx+R*.68,right)}
+    ctx.fillStyle="#173d77";ctx.font="800 14px Arial, sans-serif";ctx.textAlign="center";ctx.fillText(p.type==="pipe"?T("PIPE", "أنبوب"):p.type==="half-flange"?T("HALF FLANGE", "نصف فلنجة"):T("DC FLANGE", "فلنجة DC"),cx,28);ctx.fillStyle="#52657a";ctx.font="700 11px Arial, sans-serif";ctx.fillText(T("Safe technical view · dimensions remain editable", "منظر فني آمن · الأبعاد قابلة للتعديل"),cx,h-16);
   }
   function num(v, d) {
     var x = parseFloat(v);
@@ -1126,9 +1171,15 @@
     });
     ro.observe(box);
     inst.ro = ro;
-    (function animate() {
+    function animate() {
+      inst.raf = 0;
       if (inst.dead || !el.isConnected) return;
-      requestAnimationFrame(animate);
+      var page = el.closest("main.page");
+      if (document.hidden || (page && page.classList.contains("hidden"))) {
+        inst.lifecyclePaused = true;
+        return;
+      }
+      inst.lifecyclePaused = false;
       controls.update();
       renderer.render(scene, camera);
       positionModelCallouts(inst);
@@ -1136,7 +1187,12 @@
       if (needle)
         needle.style.transform =
           "rotate(" + (controls.getAzimuthalAngle() * 180) / Math.PI + "deg)";
-    })();
+      inst.raf = requestAnimationFrame(animate);
+    }
+    inst.resumeAnimation = function () {
+      if (!inst.dead && !inst.raf) inst.raf = requestAnimationFrame(animate);
+    };
+    inst.resumeAnimation();
   }
   function sizeAnnotation(inst, src) {
     var c = inst.ann,
@@ -2027,6 +2083,7 @@
     }
   }
   function buildModel(inst) {
+    if (inst && inst.fallback2D) { drawFallbackModel(inst); return; }
     if (inst.group) {
       inst.scene.remove(inst.group);
       inst.group.traverse(function (o) {
@@ -2297,6 +2354,22 @@
       }, 1200);
     },
   };
+  document.addEventListener("qc:pagechange", function (e) {
+    var active = e && e.detail && e.detail.to === "flange";
+    Object.keys(instances).forEach(function (k) {
+      var inst = instances[k];
+      if (!inst || inst.fallback2D) return;
+      if (active) inst.resumeAnimation && inst.resumeAnimation();
+      else if (inst.raf) { cancelAnimationFrame(inst.raf); inst.raf = 0; inst.lifecyclePaused = true; }
+    });
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      Object.keys(instances).forEach(function (k) { var inst=instances[k]; if(inst&&inst.raf){cancelAnimationFrame(inst.raf);inst.raf=0;inst.lifecyclePaused=true;} });
+    } else if (document.documentElement.dataset.qcActivePage === "flange") {
+      Object.keys(instances).forEach(function (k) { var inst=instances[k]; if(inst&&inst.resumeAnimation)inst.resumeAnimation(); });
+    }
+  });
   render();
   var last = document.documentElement.dir;
   new MutationObserver(function () {
