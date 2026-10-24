@@ -1,7 +1,7 @@
 {
   "name": "QC Survey App",
   "short_name": "QC Survey",
-  "description": "QC Survey v322 offline app with universal interactive Flange 3D, WebGL acceleration and software 3D compatibility mode.",
+  "description": "QC Survey v325 organized phone-first Mobile Mapping interface with stable startup and offline operation.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

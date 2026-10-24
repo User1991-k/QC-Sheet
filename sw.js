@@ -1,5 +1,5 @@
 /* QC Survey App SW v261 clean DC sketch without drawn safe-area boundary. */
-const CACHE = 'qc-survey-v322-universal-flange-3d';
+const CACHE = 'qc-survey-v325-mobile-mapping-polish';
 /* v296: the app shell includes the local Arabic/English OCR engine and models so
    recognition remains available offline; unrelated heavy libraries still cache on first use. */
 const SHELL = [
@@ -7,7 +7,7 @@ const SHELL = [
   './index.html',
   './features.js?v=321.0',
   './features.css',
-  './i18n.js',
+  './i18n.js?v=324.0',
   './converters.js',
   './converters.css',
   './rd-line-detection.js?v=315.0',
@@ -24,12 +24,12 @@ const SHELL = [
   './qc-assistant-knowledge.js?v=293.0',
   './qc-assistant.js?v=296.2',
   './qc-assistant.css?v=293.0',
-  './qc-field-coach.js?v=321.0',
+  './qc-field-coach.js?v=324.0',
   './qc-field-coach.css?v=321.0',
   './ts-project-info.js?v=294.0',
   './ts-project-info.css?v=294.0',
   './ts-batch-ocr.css?v=299.0',
-  './electronic-signature.js?v=295.0',
+  './electronic-signature.js?v=324.0',
   './electronic-signature.css?v=295.0',
   './ui-workspace.js?v=282.0',
   './page-navigation-pro.js',
@@ -37,7 +37,7 @@ const SHELL = [
   './responsive-topbar.css',
   './smart-datetime.js?v=285.0',
   './smart-datetime.css?v=285.0',
-  './design-system-pro.js?v=321.0',
+  './design-system-pro.js?v=324.0',
   './design-system-pro.css?v=316.0',
   './bilingual-translation.css?v=286.0',
   './bilingual-translation.js?v=286.0',
@@ -45,8 +45,8 @@ const SHELL = [
   './global-quality.css',
   './vendor/three-r128.min.js',
   './vendor/OrbitControls-r128.js',
-  './dc-flange.js?v=322.0',
-  './dc-flange-pro.js?v=317.0',
+  './dc-flange.js?v=324.0',
+  './dc-flange-pro.js?v=324.0',
   './dc-sketch-pro.js',
   './dc-flange.css?v=317.0',
   './dc-flange-pro.css?v=317.0',
@@ -55,8 +55,8 @@ const SHELL = [
   './gpr-logging.css',
   './dpr.js?v=288.0',
   './dpr.css?v=288.0',
-  './mobile-mapping.js?v=278.0',
-  './mobile-mapping.css?v=278.0',
+  './mobile-mapping.js?v=325.0',
+  './mobile-mapping.css?v=325.0',
   './exceljs-local.min.js',
   './gpr-columns-pro.css',
   './navigation-wrap-touch.css',
@@ -90,7 +90,7 @@ const SHELL = [
   './universal-field-engine-v320.css?v=321.0',
   './page-lifecycle-v320.js?v=321.0',
   './page-lifecycle-v320.css?v=321.0',
-  './mobile-hardening-v321.css?v=322.0',
+  './mobile-hardening-v321.css?v=325.0', './mobile-mapping-polish-v325.css?v=325.0',
   './pdfjs-local.mjs',
   './pdfjs-worker-local.mjs',
   './vendor/tesseract/tesseract.min.js',
@@ -118,12 +118,20 @@ const SHELL = [
   './icons/maskable-192.png',
   './icons/maskable-512.png',
 ];
+const CORE = ['./index.html','./manifest.webmanifest','./features.css','./responsive-topbar.css','./page-navigation-pro.css','./mobile-hardening-v321.css?v=325.0', './mobile-mapping-polish-v325.css?v=325.0'];
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(()=>null).then(()=>self.skipWaiting()));
+  /* Cache only the startup core here. Caching every OCR/font/icon asset during
+     first paint caused phone freezes and controller-driven refreshes. */
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).catch(()=>null));
 });
-/* v204: تفعيل فوري بطلب الصفحة (زر «حدّث الآن») ⟶ لا يبقى المستخدم على نسخة قديمة */
+async function warmShell(){
+  const c=await caches.open(CACHE);
+  for(let i=0;i<SHELL.length;i+=8){await Promise.all(SHELL.slice(i,i+8).map(x=>c.add(x).catch(()=>null)));await new Promise(r=>setTimeout(r,60));}
+}
 self.addEventListener('message', (e) => {
-  if (e && e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (!e || !e.data) return;
+  if (e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (e.data.type === 'QC_WARM_CACHE') e.waitUntil(warmShell());
 });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((keys)=>Promise.all(keys.filter((k)=>k!==CACHE).map((k)=>caches.delete(k)))).then(()=>self.clients.claim()));

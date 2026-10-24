@@ -2450,7 +2450,7 @@
 
   </style>
   <link rel="stylesheet" href="dpr.css?v=294.0" />
-  <link rel="stylesheet" href="mobile-mapping.css?v=278.0" />
+  <link rel="stylesheet" href="mobile-mapping.css?v=325.0" />
   <link rel="stylesheet" href="backfilling.css" />
   <link rel="stylesheet" href="voice-entry.css" />
   <link rel="stylesheet" href="smart-entry-pro.css?v=296.0" />
@@ -2459,7 +2459,8 @@
   <link rel="stylesheet" href="ui-polish-v320.css?v=321.0" />
   <link rel="stylesheet" href="universal-field-engine-v320.css?v=321.0" />
   <link rel="stylesheet" href="page-lifecycle-v320.css?v=321.0" />
-  <link rel="stylesheet" href="mobile-hardening-v321.css?v=322.0" />
+  <link rel="stylesheet" href="mobile-hardening-v321.css?v=325.0" />
+  <link rel="stylesheet" href="mobile-mapping-polish-v325.css?v=325.0" />
 </head>
 <body>
   <!-- ===== v197: حارس الإقلاع =====
@@ -2517,7 +2518,7 @@
       } catch (e) { /* متصفح قديم: نكتفي بحارس __arr */ }
     });
   })();
-  window.__QC_VERSION = "v322.0";
+  window.__QC_VERSION = "v325.0";
 
   /* v206: كاشف «الكتلة الميتة». إن مات السكربت الرئيسي بخطأ صياغة، تبقى
      __qcMainScriptDone غير معرّفة. نُخبر المستخدم بالسبب الحقيقي بلافتة
@@ -2615,7 +2616,7 @@
       <div class="brand">
         <div class="brand-mark">QC</div>
         <div class="brand-text">
-          <strong>QC Survey App · v322</strong>
+          <strong>QC Survey App · v325</strong>
           <span>Direct offline · No login · RD multi-drawing</span>
         </div>
       </div>
@@ -10018,7 +10019,12 @@ function formatDmsDisplay(value, isLat) {
             } catch (e) {}
           }
           qcSafeSwUpdate();
-          setInterval(qcSafeSwUpdate, 60000);
+          setInterval(qcSafeSwUpdate, 300000);
+          /* Complete offline caching only after the interface has settled. */
+          setTimeout(function () {
+            try { if (reg.active) reg.active.postMessage({ type: "QC_WARM_CACHE" }); }
+            catch (eWarm) {}
+          }, 8000);
 
           reg.addEventListener("updatefound", function () {
             var nw = reg.installing;
@@ -10033,11 +10039,12 @@ function formatDmsDisplay(value, isLat) {
           console.warn("SW register failed", err);
         });
 
-        /* عند تفعيل نسخة جديدة ⟶ أعد التحميل مرة واحدة فقط */
+        /* Never refresh during startup. Reload only after the user presses Update now. */
         var __reloaded = false;
         navigator.serviceWorker.addEventListener("controllerchange", function () {
-          if (__reloaded) return;
+          if (__reloaded || sessionStorage.getItem("qcSwUserReload") !== "1") return;
           __reloaded = true;
+          sessionStorage.removeItem("qcSwUserReload");
           location.reload();
         });
       });
@@ -10081,10 +10088,12 @@ function formatDmsDisplay(value, isLat) {
         go.textContent = "جارٍ التحديث…";
         navigator.serviceWorker.getRegistration().then(function (reg) {
           if (reg && reg.waiting) {
-            try { reg.waiting.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+            try { sessionStorage.setItem("qcSwUserReload", "1"); reg.waiting.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+          } else {
+            go.disabled = false;
+            go.textContent = "لا يوجد تحديث جاهز";
           }
-          /* احتياط: لو لم يستجب خلال ثانيتين ⟶ أعد التحميل قسراً */
-          setTimeout(function () { location.reload(); }, 2000);
+          /* No forced reload: controllerchange performs one approved reload only. */
         }).catch(function () { location.reload(); });
       });
       var later = document.getElementById("qc-update-later");
@@ -10253,25 +10262,25 @@ function formatDmsDisplay(value, isLat) {
   <script src="vendor/jsQR.js"></script>
   <script src="enterprise.js"></script>
   <script src="protection.js"></script>
-  <script src="i18n.js"></script>
+  <script src="i18n.js?v=324.0"></script>
   <script src="educational-guide.js"></script>
   <script src="qc-ai-reference.js?v=299.0"></script>
   <script src="qc-assistant-learning.js?v=292.1"></script>
   <script src="qc-assistant-knowledge.js?v=294.0"></script>
   <script src="qc-assistant.js?v=296.2"></script>
-  <script src="qc-field-coach.js?v=321.0"></script>
+  <script src="qc-field-coach.js?v=324.0"></script>
   <script src="ts-project-info.js?v=294.0"></script>
-  <script src="electronic-signature.js?v=295.0"></script>
+  <script src="electronic-signature.js?v=324.0"></script>
   <script src="ui-workspace.js?v=279.0"></script>
   <script src="rd-line-detection.js?v=315.0"></script>
   <script src="page-navigation-pro.js?v=281.0"></script>
   <script src="smart-datetime.js?v=285.0"></script>
-  <script src="design-system-pro.js?v=321.0"></script>
+  <script src="design-system-pro.js?v=324.0"></script>
   <script src="global-quality.js"></script>
   <script src="vendor/three-r128.min.js"></script>
   <script src="vendor/OrbitControls-r128.js"></script>
-  <script src="dc-flange.js?v=322.0"></script>
-  <script src="dc-flange-pro.js?v=317.0"></script>
+  <script src="dc-flange.js?v=324.0"></script>
+  <script src="dc-flange-pro.js?v=324.0"></script>
   <script src="dc-sketch-pro.js"></script>
   <script src="gpr-logging.js"></script>
   <!-- Complete Drone Checklist implementation embedded in index.html. -->
@@ -10330,7 +10339,7 @@ window.exportDronePdf=exportPdf;window.QCDroneChecklist={state:function(){return
 var last=document.documentElement.dir;new MutationObserver(function(){if(document.documentElement.dir!==last){last=document.documentElement.dir;render()}}).observe(document.documentElement,{attributes:true,attributeFilter:['dir']});render();
 })();
   </script>
-  <script src="mobile-mapping.js?v=278.0"></script>
+  <script src="mobile-mapping.js?v=325.0"></script>
   <script src="dpr.js?v=294.0"></script>
   <script src="backfilling.js"></script>
   <script src="voice-entry.js"></script>

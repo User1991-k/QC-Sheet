@@ -85,8 +85,9 @@ function apply(){if(busy)return;busy=true;document.documentElement.lang=lang;doc
 function setLanguage(v){lang=v==='ar'?'ar':'en';try{localStorage.setItem(KEY,lang);localStorage.setItem('gnss-language',lang)}catch(e){};apply()}
 function toggle(){setLanguage(lang==='ar'?'en':'ar')}
 function installButton(){var b=document.getElementById('qc-language-global'),tools=document.getElementById('top-tools'),host=tools||document.querySelector('.nav-inner');if(!host)return;if(b){if(tools&&b.parentElement!==tools)tools.appendChild(b);return}b=document.createElement('button');b.type='button';b.id='qc-language-global';b.className='tool-btn qc-language-switch';b.setAttribute('aria-label','Application language');b.addEventListener('click',toggle);host.appendChild(b)}
-var mo=new MutationObserver(function(){if(busy||queued)return;queued=true;requestAnimationFrame(function(){queued=false;apply()})});
-function boot(){installButton();apply();mo.observe(document.body,{childList:true,subtree:true});setTimeout(function(){installButton();apply()},350);setTimeout(function(){installButton();apply()},1200);setTimeout(apply,2400)}
+var pendingNodes=[];function prepareInputs(root){if(!root||root.nodeType!==1)return;var list=[];if(root.matches&&root.matches('input,textarea,select'))list.push(root);if(root.querySelectorAll)list=list.concat(Array.prototype.slice.call(root.querySelectorAll('input,textarea,select')));list.forEach(function(el){el.setAttribute('lang','en-GB');el.setAttribute('dir','ltr');el.classList.add('qc-english-entry')})}
+var mo=new MutationObserver(function(records){if(busy)return;records.forEach(function(r){Array.prototype.forEach.call(r.addedNodes||[],function(n){if(n&&n.nodeType===1)pendingNodes.push(n)})});if(queued||!pendingNodes.length)return;queued=true;requestAnimationFrame(function(){queued=false;var nodes=pendingNodes.splice(0);busy=true;nodes.forEach(function(n){translateElement(n);prepareInputs(n)});busy=false})});
+function boot(){installButton();apply();mo.observe(document.body,{childList:true,subtree:true});setTimeout(installButton,350)}
 window.QCI18N={setLanguage:setLanguage,toggle:toggle,getLanguage:function(){return lang},apply:apply,t:function(en,ar){return lang==='ar'?ar:en}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
